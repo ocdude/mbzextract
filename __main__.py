@@ -13,3 +13,4 @@ if __name__ == "__main__":
 
     m.parse_backup(args.input)
     m.extract()
+    m.clean()

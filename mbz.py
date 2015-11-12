@@ -3,6 +3,7 @@ import zipfile
 import tarfile
 import sys
 import tempfile
+import shutil
 import re
 import xml.etree.ElementTree as et
 import sqlite3
@@ -13,10 +14,12 @@ from html.parser import HTMLParser
 
 class MBZ:
     def __init__(self):
-        # create temporary file for sqlite database
-        self.db_file = tempfile.NamedTemporaryFile().name
+
+        # create temporary directory for sqlite database and file extraction
+        self.temp_dir = tempfile.mkdtemp()
 
         # create the database and cursor
+        self.db_file = self.temp_dir + "/moodle.db"
         self.db = sqlite3.connect(self.db_file, detect_types=sqlite3.PARSE_DECLTYPES)
         self.db_cursor = self.db.cursor()
 
@@ -33,7 +36,7 @@ class MBZ:
         self.db_cursor.execute(query)
 
         # create a table for files
-        query = "CREATE TABLE files (id int, contenthash text, contextid int, filename text, mime text, directory text)"
+        query = "CREATE TABLE files (id int, contenthash text, contextid int, filename text, mime text)"
         self.db_cursor.execute(query)
 
         # commit the transaction
@@ -46,19 +49,21 @@ class MBZ:
         # try opening the moodle_backup.xml file and create the moodle_backup object
         try:
             self.moodle_backup = et.parse(self.backup.open('moodle_backup.xml')).getroot()
-            self.moodle_users = et.parse(self.backup.open('users.xml')).getroot()
+            self.moodle_files = et.parse(self.backup.open('files.xml')).getroot()
+
+            # check to see if this backup file has users
+            if self.moodle_backup.find('./information/settings/setting/[name="users"]/value').text == "1":
+                self.moodle_users = et.parse(self.backup.open('users.xml')).getroot()
+                # add users into the database we just created
+                for user in self.moodle_users.findall('./user'):
+                    user_info = (user.get('id'),
+                        user.find('firstname').text,
+                        user.find('lastname').text,
+                        user.find('email').text)
+                    self.db_cursor.execute('INSERT INTO users VALUES(?,?,?,?)',user_info)
+
         except KeyError:
             sys.exit('The backup file provided does not seem to be a standard Moodle backup file. Exiting.')
-
-        # parse the xml and add entries to the database
-
-        # users first
-        for user in self.moodle_users.findall('./user'):
-            user_info = (user.get('id'),
-                user.find('firstname').text,
-                user.find('lastname').text,
-                user.find('email').text)
-            self.db_cursor.execute('INSERT INTO users VALUES(?,?,?,?)',user_info)
 
         # activities next
 
@@ -69,18 +74,24 @@ class MBZ:
                 activity.find('directory').text)
             self.db_cursor.execute('INSERT INTO activities VALUES(?,?,?,?)',activity_info)
 
+        # then files
+
+        for f in self.moodle_files.findall('./file'):
+            file_info = (f.get('id'),
+                f.find('contenthash').text,
+                f.find('contextid').text,
+                f.find('filename').text,
+                f.find('mimetype').text)
+            self.db_cursor.execute('INSERT INTO files VALUES (?,?,?,?,?)',file_info)
+
         self.db.commit()
 
     def extract(self):
-        # find all of the activities in the course and load the appropriate modules
-        self.db_cursor.execute('SELECT DISTINCT modulename FROM activities')
-        for module in self.db_cursor.fetchall():
-            try:
-                importlib.invalidate_caches()
-                mod = getattr(importlib.import_module("plugins."+module[0]),module[0])
-            except ImportError:
-                print('A plugin for ' + module[0] + ' does not currently exist. Skipping.')
-                continue
+        # function to load plugins, then extract files based on what we have plugins for
+        pass
+
+    def clean(self):
+        shutil.rmtree(self.temp_dir)
 
 class mbzFile(MBZ):
 
@@ -101,7 +112,7 @@ class mbzFile(MBZ):
         if self.backup_type == "zip":
             backup = zipfile.ZipFile(self.file,'r')
             return backup.open(f)
-            
+
         elif self.backup_type == "gzip":
             backup = tarfile.open(self.file,'r')
             return backup.extractfile(f)

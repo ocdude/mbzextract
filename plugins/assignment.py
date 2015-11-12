@@ -1,5 +1,5 @@
 class assignment:
-    def __init__():
+    def __init__(self):
         pass
-    def test():
+    def test(self):
         print('yay!')
