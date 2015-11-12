@@ -20,6 +20,10 @@ class MBZ:
         self.db = sqlite3.connect(self.db_file, detect_types=sqlite3.PARSE_DECLTYPES)
         self.db_cursor = self.db.cursor()
 
+        # create a table for course information
+        query = "CREATE TABLE course (fullname text, shortname text, moodle_release text, startdate int, www_root text)"
+        self.db_cursor.execute(query)
+
         # create a table for list of activites and resources
         query = "CREATE TABLE activities (moduleid int, modulename text, title text, directory text)"
         self.db_cursor.execute(query)
@@ -28,40 +32,27 @@ class MBZ:
         query = "CREATE TABLE users (userid int, firstname text, lastname text, email text)"
         self.db_cursor.execute(query)
 
+        # create a table for files
+        query = "CREATE TABLE files (id int, contenthash text, contextid int, filename text, mime text, directory text)"
+        self.db_cursor.execute(query)
+
         # commit the transaction
         self.db.commit()
 
     def parse_backup(self,backup_file):
-        # check if the file provided is a zip file
-        if magic.from_file(backup_file,mime=True) == b'application/zip':
-            # open the zip file
-            self.backup = zipfile.ZipFile(backup_file,'r')
 
-            # try opening the moodle_backup.xml file and create the moodle_backup object
-            try:
-                self.moodle_backup = et.parse(self.backup.open('moodle_backup.xml')).getroot()
-                self.moodle_users = et.parse(self.backup.open('users.xml')).getroot()
-            except KeyError:
-                sys.exit('The backup file provided does not seem to be a standard Moodle backup file. Exiting.')
+        self.backup = mbzFile(backup_file)
 
-        # if not a zip file, check if it's a tar.gz
-        elif magic.from_file(backup_file,mime=True) == b'application/x-gzip':
-            self.backup = tarfile.open(backup_file,'r')
-
-            # try opening the moodle_backup.xml file and create the moodle_backup object
-            try:
-                self.moodle_backup = et.parse(self.backup.extractfile('moodle_backup.xml')).getroot()
-                self.moodle_backup = et.parse(self.backup.extractfile('users.xml')).getroot()
-            except KeyError:
-                sys.exit('The backup file provided does not seem to be a standard Moodle backup file. Exiting.')
-
-        else:
+        # try opening the moodle_backup.xml file and create the moodle_backup object
+        try:
+            self.moodle_backup = et.parse(self.backup.open('moodle_backup.xml')).getroot()
+            self.moodle_users = et.parse(self.backup.open('users.xml')).getroot()
+        except KeyError:
             sys.exit('The backup file provided does not seem to be a standard Moodle backup file. Exiting.')
 
         # parse the xml and add entries to the database
 
         # users first
-
         for user in self.moodle_users.findall('./user'):
             user_info = (user.get('id'),
                 user.find('firstname').text,
@@ -79,11 +70,41 @@ class MBZ:
             self.db_cursor.execute('INSERT INTO activities VALUES(?,?,?,?)',activity_info)
 
         self.db.commit()
+
+    def extract(self):
+        # find all of the activities in the course and load the appropriate modules
         self.db_cursor.execute('SELECT DISTINCT modulename FROM activities')
         for module in self.db_cursor.fetchall():
             try:
                 importlib.invalidate_caches()
-                importlib.import_module("plugins."+module[0])
+                mod = getattr(importlib.import_module("plugins."+module[0]),module[0])
             except ImportError:
                 print('A plugin for ' + module[0] + ' does not currently exist. Skipping.')
                 continue
+
+class mbzFile(MBZ):
+
+    # This class is intended to deal with the fact that the moodle backup files
+    # can come in two flavors, zip and gzip. The python libraries for both
+    # vary slightly.
+
+    def __init__(self,backup_file):
+
+        if magic.from_file(backup_file,mime=True) == b'application/zip':
+            self.backup_type = "zip"
+        elif magic.from_file(backup_file,mime=True) == b'application/x-gzip':
+            self.backup_type = "gzip"
+        self.file = backup_file
+
+    def open(self,f):
+
+        if self.backup_type == "zip":
+            backup = zipfile.ZipFile(self.file,'r')
+            return backup.open(f)
+            
+        elif self.backup_type == "gzip":
+            backup = tarfile.open(self.file,'r')
+            return backup.extractfile(f)
+
+    def extract(self,file):
+        pass
