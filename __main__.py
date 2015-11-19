@@ -9,7 +9,7 @@ if __name__ == "__main__":
     parser.add_argument("-o",metavar="OUTPUT DIR",help="Output directory. If omitted, files will be extracted to a folder in the current directory")
 
     args = parser.parse_args()
-    m = mbz.MBZ()
+    m = mbz.MBZ(args.o)
 
     m.parse_backup(args.input)
     m.extract()
