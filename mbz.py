@@ -120,11 +120,33 @@ class MBZ:
         if os.path.exists(self.out_dir+"/"+self.course) == False:
             os.mkdir(self.out_dir+"/"+self.course)
         os.chdir(self.out_dir+"/"+self.course)
+        self.final_dir = os.getcwd()
+        print(self.final_dir)
+
         # create directory structure by section
-        self.db_cursor.execute('SELECT sectionid,title FROM sections')
+        self.db_cursor.execute('SELECT * FROM sections')
         for section in self.db_cursor.fetchall():
-            os.mkdir("Section - "+self.stripped(section[1])+"_"+str(section[0]))
+            if os.path.exists("Section - "+self.stripped(section[1])+"_"+str(section[0])) == False:
+                os.mkdir("Section - "+self.stripped(section[1])+"_"+str(section[0]))
             os.chdir("Section - "+self.stripped(section[1])+"_"+str(section[0]))
+
+            # create a directory for files if this section has files associated with it
+            # that are not part of an activity
+            inforef_xml = et.parse(self.backup.open(section[2]+"/inforef.xml")).getroot()
+            if inforef_xml.find('./fileref') is not None:
+                if os.path.exists('files') == False:
+                    os.mkdir('files')
+
+                # extract the files
+                os.chdir(self.temp_dir)
+                for f in inforef_xml.findall('./fileref/file'):
+                    self.db_cursor.execute('SELECT contenthash,filename FROM files WHERE filename != "." and id=?',(f.find('id').text,))
+                    results = self.db_cursor.fetchone()
+                    if results is not None:
+                        self.backup.extract('files/'+results[0][:2]+'/'+results[0])
+                        shutil.move(self.temp_dir+"/files/"+results[0][:2]+"/"+results[0],self.final_dir+"/Section - "+self.stripped(section[1])+"_"+str(section[0])+"/files/"+results[1])
+                os.chdir(self.final_dir+"/Section - "+self.stripped(section[1])+"_"+str(section[0]))
+
 
             # fetch the activities in this section
             self.db_cursor.execute('SELECT modulename,moduleid,directory FROM activities WHERE sectionid=?',(section[0],))
@@ -174,7 +196,7 @@ class mbzFile(MBZ):
             backup = tarfile.open(self.file,'r')
             return backup.extractfile(f)
 
-    def extract(self,file):
+    def extract(self,f):
 
         if self.backup_type == "zip":
             backup = zipfile.ZipFile(self.file,'r')
