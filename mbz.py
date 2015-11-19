@@ -42,7 +42,10 @@ class MBZ:
         # commit the transaction
         self.db.commit()
 
+        # TODO: There probably should be a table created for grades, but that is for a future revision
+
     def parse_backup(self,backup_file):
+        """Open the moodle_backup.xml and files.xml files and parse the contents into the database"""
 
         self.backup = mbzFile(backup_file)
 
@@ -87,17 +90,25 @@ class MBZ:
         self.db.commit()
 
     def extract(self):
-        # function to load plugins, then extract files based on what we have plugins for
-        pass
+        self.db_cursor.execute('SELECT modulename,moduleid,directory FROM activities')
+        activities = self.db_cursor.fetchall()
+        for activity in activities:
+            try:
+                plugin = importlib.import_module("plugins."+activity[0]+"."+activity[0])
+                print('\033[32;22mProcessing\033[0m', activity[0],activity[1])
+            except ImportError:
+                print('\033[31;22mSkipping\033[0m',activity[0])
+                continue
+            mod = plugin.moodle_module(self.backup,self.temp_dir,self.db,activity[2])
 
     def clean(self):
         shutil.rmtree(self.temp_dir)
 
 class mbzFile(MBZ):
 
-    # This class is intended to deal with the fact that the moodle backup files
-    # can come in two flavors, zip and gzip. The python libraries for both
-    # vary slightly.
+    """ This class is intended to deal with the fact that the moodle backup files
+     can come in two flavors, zip and gzip. The python libraries for both
+     vary slightly."""
 
     def __init__(self,backup_file):
 
@@ -118,4 +129,11 @@ class mbzFile(MBZ):
             return backup.extractfile(f)
 
     def extract(self,file):
-        pass
+
+        if self.backup_type == "zip":
+            backup = zipfile.ZipFile(self.file,'r')
+            return backup.extract(f)
+
+        elif self.backup_type == "gzip":
+            backup = tarfile.open(self.file,'r')
+            return backup.extract(f)
