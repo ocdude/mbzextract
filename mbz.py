@@ -17,7 +17,11 @@ class MBZ:
         if output == None:
             self.out_dir = "."
         else:
-            self.out_dir = output
+            if os.path.exists(self.out_dir):
+                self.out_dir = output
+            else:
+                os.makedirs(output)
+                self.out_dir = output
 
         # create temporary directory for sqlite database and file extraction
         self.temp_dir = tempfile.mkdtemp()
@@ -73,6 +77,8 @@ class MBZ:
                         user.find('email').text)
                     self.db_cursor.execute('INSERT INTO users VALUES(?,?,?,?)',user_info)
                 self.user_data = True
+            else:
+                self.user_data = False
 
             # grab course information
             course_info = (self.moodle_backup.find('./information/original_course_fullname').text,
@@ -161,7 +167,7 @@ class MBZ:
                 mod = plugin.moodle_module(self.backup,self.temp_dir,self.db,activity[2],self.final_dir+"/Section - "+self.stripped(section[1])+"_"+str(section[0]),self.user_data)
                 mod.parse()
                 mod.extract()
-            os.chdir("..")
+            os.chdir(self.final_dir)
 
         # create a copy of the sqlite database in the extracted folder
         shutil.copy(self.temp_dir+"/moodle.db",self.final_dir+"/"+"backup_database.db")
