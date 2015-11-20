@@ -158,11 +158,18 @@ class MBZ:
                 except ImportError:
                     print('\033[31;22mSkipping\033[0m',activity[0])
                     continue
-                mod = plugin.moodle_module(self.backup,self.temp_dir,self.db,activity[2],self.user_data)
+                mod = plugin.moodle_module(self.backup,self.temp_dir,self.db,activity[2],self.final_dir+"/Section - "+self.stripped(section[1])+"_"+str(section[0]),self.user_data)
                 mod.parse()
                 mod.extract()
             os.chdir("..")
 
+        # create a copy of the sqlite database in the extracted folder
+        shutil.copy(self.temp_dir+"/moodle.db",self.final_dir+"/"+"backup_database.db")
+
+        # create a readme file in the folder
+        f = open(self.final_dir+"/readme.txt",'w')
+        f.write("The folders are organized by the sections as they existed in your moodle course. Inside each section folder is a folder for each activity or resource that existed. In each activity or resource folder is a folder called 'files' that contains the files from that activity or resource.")
+        f.close()
     def clean(self):
         shutil.rmtree(self.temp_dir)
 
