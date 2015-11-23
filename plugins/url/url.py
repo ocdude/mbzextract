@@ -1,9 +1,5 @@
 import os
 import xml.etree.ElementTree as et
-import re
-from html.parser import HTMLParser
-from datetime import datetime
-from jinja2 import Environment, PackageLoader
 
 class moodle_module:
     def __init__(self,**kwargs):
