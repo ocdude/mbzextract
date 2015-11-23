@@ -6,14 +6,14 @@ from datetime import datetime
 from jinja2 import Environment, PackageLoader
 
 class moodle_module:
-    def __init__(self,backup_file,temp_dir,db,directory,working_dir,student_data=False):
-        self.backup = backup_file
-        self.temp_dir = temp_dir
-        self.db = db
+    def __init__(self,**kwargs):
+        self.backup = kwargs['backup']
+        self.temp_dir = kwargs['temp_dir']
+        self.db = kwargs['db']
+        self.directory = kwargs['directory']
+        self.final_dir = kwargs['working_dir']
         self.db_cursor = self.db.cursor()
-        self.directory = directory
         self.files = []
-        self.final_dir = working_dir
 
         # create database table for this resource
         query = "CREATE TABLE IF NOT EXISTS urls (activityid int PRIMARY KEY, moduleid int, contextid int, name text, url text)"
@@ -38,17 +38,17 @@ class moodle_module:
     def extract(self):
 
         # create the folder for the urls to be extracted to
-        if os.path.exists(self.final_dir+"/"+self.stripped(self.url_xml.find('./url/name').text)+"_url") == False:
-            os.makedirs(self.final_dir+"/"+self.stripped(self.url_xml.find('./url/name').text)+"_url")
-        os.chdir(self.final_dir+"/"+self.stripped(self.url_xml.find('./url/name').text)+"_url")
+        if os.path.exists(os.path.join(self.final_dir,self.backup.stripped(self.url_xml.find('./url/name').text)+"_url")) == False:
+            os.makedirs(os.path.join(self.final_dir,self.backup.stripped(self.url_xml.find('./url/name').text)+"_url"))
+        os.chdir(os.path.join(self.final_dir,self.backup.stripped(self.url_xml.find('./url/name').text)+"_url"))
 
         # write a .url file
-        f = open(self.stripped(self.url_xml.find('./url/name').text)+".url",'w')
+        f = open(self.backup.stripped(self.url_xml.find('./url/name').text)+".url",'w')
         f.write("[InternetShortcut]\nURL="+self.url_xml.find('.url/externalurl').text)
         f.close()
 
         # write a .desktop file for linux users
-        f = open(self.stripped(self.url_xml.find('./url/name').text)+".desktop",'w')
+        f = open(self.backup.stripped(self.url_xml.find('./url/name').text)+".desktop",'w')
         f.write("[Desktop Entry]\nName="+self.url_xml.find('./url/name').text+"\nEncoding=UTF-8\nType=Link\nIcon=text-html\nURL="+self.url_xml.find('.url/externalurl').text)
         f.close()
 
@@ -56,9 +56,3 @@ class moodle_module:
         f = open("readme.txt",'w')
         f.write('The original url was:'+self.url_xml.find('./url/externalurl').text+'\n\nThe .url file should open the web page for this link when you double click on it. Use the .desktop file if you are on Linux instead.\n\nNote that if the website for this link is no longer online, you will not be able to open it.')
         f.close()
-
-    def stripped(self,x):
-        the_string = "".join([i for i in x if 31 < ord(i) < 127])
-        the_string = the_string.strip()
-        the_string = re.sub(r'[^\w]','_',the_string)
-        return the_string

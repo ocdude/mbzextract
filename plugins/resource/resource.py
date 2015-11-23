@@ -4,14 +4,14 @@ import shutil
 import xml.etree.ElementTree as et
 
 class moodle_module:
-    def __init__(self,backup_file,temp_dir,db,directory,working_dir,student_data=False):
-        self.backup = backup_file
-        self.temp_dir = temp_dir
-        self.db = db
+    def __init__(self,**kwargs):
+        self.backup = kwargs['backup']
+        self.temp_dir = kwargs['temp_dir']
+        self.db = kwargs['db']
+        self.directory = kwargs['directory']
+        self.final_dir = kwargs['working_dir']
         self.db_cursor = self.db.cursor()
-        self.directory = directory
         self.files = []
-        self.final_dir = working_dir
 
         query = "CREATE TABLE IF NOT EXISTS resources (activityid int, moduleid int, contextid int, name text)"
         self.db_cursor.execute(query)
@@ -25,6 +25,7 @@ class moodle_module:
             resource_xml.get('moduleid'),
             resource_xml.get('contextid'),
             resource_xml.find('./resource/name').text)
+
         self.name = resource_xml.find('./resource/name').text
         self.db_cursor.execute("INSERT INTO resources VALUES(?,?,?,?)",resource)
         self.db.commit()
@@ -37,7 +38,7 @@ class moodle_module:
         print('\tNumber of files:',len(self.files))
 
     def extract(self):
-        path = self.final_dir + "/" + self.stripped(self.name) + "/files"
+        path = os.path.join(self.final_dir,self.backup.stripped(self.name))
         if os.path.exists(path) == False:
             os.makedirs(path)
         os.chdir(path)
@@ -46,12 +47,5 @@ class moodle_module:
             results = self.db_cursor.fetchone()
             if results is not None:
                 os.chdir(self.temp_dir)
-                self.backup.extract('files/'+results[0][:2]+'/'+results[0])
-                shutil.move(self.temp_dir+"/files/"+results[0][:2]+"/"+results[0],path + "/" + results[1])
-
-
-    def stripped(self,x):
-        the_string = "".join([i for i in x if 31 < ord(i) < 127])
-        the_string = the_string.strip()
-        the_string = re.sub(r'[^\w]','_',the_string)
-        return the_string
+                self.backup.extract(os.path.join('files',results[0][:2],results[0]))
+                shutil.move(os.path.join(self.temp_dir,"files",results[0][:2],results[0]),os.path.join(path,results[1]))

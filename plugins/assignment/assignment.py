@@ -5,20 +5,20 @@ from datetime import datetime
 from jinja2 import Environment, PackageLoader
 
 class moodle_module:
-    def __init__(self,backup_file,temp_dir,db,directory,working_dir,student_data=False):
-        self.backup = backup_file
-        self.temp_dir = temp_dir
-        self.db = db
+    def __init__(self,**kwargs):
+        self.backup = kwargs['backup']
+        self.temp_dir = kwargs['temp_dir']
+        self.db = kwargs['db']
+        self.directory = kwargs['directory']
+        self.final_dir = kwargs['working_dir']
         self.db_cursor = self.db.cursor()
-        self.directory = directory
         self.files = []
-        self.final_dir = working_dir
 
         # create table for this activity
         query = 'CREATE TABLE IF NOT EXISTS assignments (activityid int PRIMARY KEY,moduleid int,contextid int,name text,intro text,assignmenttype text)'
         self.db_cursor.execute(query)
 
-        if student_data == True:
+        if kwargs['student_data'] == True:
             # create table for the submissions to the assignments
             query = 'CREATE TABLE IF NOT EXISTS assignment_submissions (submissionid int PRIMARY KEY,activityid int,userid int,timecreated int,timemodified int,data text,grade real,comment text,teacher int,timemarked int)'
             self.db_cursor.execute(query)
