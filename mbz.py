@@ -111,11 +111,22 @@ class MBZ:
         # then files
 
         for f in self.moodle_files.findall('./file'):
-            file_info = (f.get('id'),
-                f.find('contenthash').text,
-                f.find('contextid').text,
-                f.find('filename').text,
-                f.find('mimetype').text)
+            # do a sanity check on file name before continuing
+            if f.find('filename').text == ".":
+                continue
+            else:
+                filename = f.find('filename').text
+            id = f.get('id')
+            contenthash = f.find('contenthash').text
+            contextid = f.find('contextid').text
+            mimetype = f.find('mimetype').text
+
+            file_info = (id,
+                contenthash,
+                contextid,
+                filename,
+                mimetype)
+
             self.db_cursor.execute('INSERT INTO files VALUES (?,?,?,?,?)',file_info)
 
         self.db.commit()
@@ -184,6 +195,9 @@ class MBZ:
         the_string = the_string.strip()
         the_string = re.sub(r'[^\w]','_',the_string)
         return the_string
+
+    def extract_file(self,f):
+        pass
 
 class mbzFile(MBZ):
 
