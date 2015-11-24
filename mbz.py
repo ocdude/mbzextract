@@ -55,7 +55,7 @@ class MBZ:
 
         # create a table for files
         query = '''CREATE TABLE files
-            (id int, contenthash text, contextid int, filename text, mime text)'''
+            (id int, contenthash text, contextid int, filename text, userid int, mime text)'''
         self.db_cursor.execute(query)
 
         # commit the transaction
@@ -126,15 +126,17 @@ class MBZ:
             contenthash = f.find('contenthash').text
             contextid = f.find('contextid').text
             mimetype = f.find('mimetype').text
+            userid = f.find('userid').text
 
             # create a file listing
             file_info = (id,
                 contenthash,
                 contextid,
                 filename,
+                userid,
                 mimetype)
 
-            self.db_cursor.execute('INSERT INTO files VALUES (?,?,?,?,?)',file_info)
+            self.db_cursor.execute('INSERT INTO files VALUES (?,?,?,?,?,?)',file_info)
 
         self.db.commit()
 
@@ -216,7 +218,7 @@ class MBZ:
 
     def extract_file(self,f,dest):
         self.backup.extract(os.path.join('files',f[:2],f))
-        shutil.move(os.path.join(self.temp_dir,'files',f[:2],f),dest)
+        shutil.move(os.path.join('files',f[:2],f),dest)
 
 class mbzFile(MBZ):
 
@@ -249,7 +251,7 @@ class mbzFile(MBZ):
         # the same method, but whatever, this is staying for fear of breaking
         # something later down the line.
         if self.backup_type == "zip":
-            return backup.extract(f)
+            return self.backup.extract(f)
 
         elif self.backup_type == "gzip":
             return self.backup.extract(f)
