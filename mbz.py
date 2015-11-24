@@ -8,18 +8,19 @@ import re
 import xml.etree.ElementTree as et
 import sqlite3
 import importlib
-import plugins
-from datetime import datetime
-from html.parser import HTMLParser
 
 class MBZ:
     def __init__(self,output):
         if output == None:
+            # set the output directory to the current working directory
+            # if an explicit output directory was not specified
             self.out_dir = os.getcwd()
         else:
+            # check to see if the output directory already exists
             if os.path.exists(self.out_dir):
                 self.out_dir = output
             else:
+            # otherwise create the directory
                 os.makedirs(output)
                 self.out_dir = output
 
@@ -95,7 +96,6 @@ class MBZ:
                 self.moodle_backup.find('./information/original_wwwroot').text)
             self.db_cursor.execute('INSERT INTO course VALUES (?,?,?,?,?)',course_info)
             self.course = self.moodle_backup.find('./information/original_course_fullname').text
-
         except KeyError:
             sys.exit('The backup file provided does not seem to be a standard Moodle backup file. Exiting.')
 
@@ -105,8 +105,8 @@ class MBZ:
                 section.find('title').text,
                 section.find('directory').text)
             self.db_cursor.execute('INSERT INTO sections VALUES(?,?,?)',section_info)
-        # activities next
 
+        # activities next
         for activity in self.moodle_backup.findall('./information/contents/activities/activity'):
             activity_info = (activity.find('moduleid').text,
                 activity.find('modulename').text,
@@ -116,7 +116,6 @@ class MBZ:
             self.db_cursor.execute('INSERT INTO activities VALUES(?,?,?,?,?)',activity_info)
 
         # then files
-
         for f in self.moodle_files.findall('./file'):
             # do a sanity check on file name before continuing
             if f.find('filename').text == ".":
@@ -128,6 +127,7 @@ class MBZ:
             contextid = f.find('contextid').text
             mimetype = f.find('mimetype').text
 
+            # create a file listing
             file_info = (id,
                 contenthash,
                 contextid,
@@ -171,8 +171,6 @@ class MBZ:
                     if results is not None:
                         out_path = os.path.join(self.final_dir,"Section - "+self.stripped(section[1])+"_"+str(section[0]),"files",results[1])
                         self.extract_file(results[0],out_path)
-                        #self.backup.extract(os.path.join('files',results[0][:2],results[0]))
-                        #shutil.move(os.path.join(self.temp_dir,'files',results[0][:2],results[0]),os.path.join(self.final_dir,"Section - "+self.stripped(section[1])+"_"+str(section[0]),"files",results[1]))
                 os.chdir(os.path.join(self.final_dir,"Section - "+self.stripped(section[1])+"_"+str(section[0])))
 
 
@@ -212,9 +210,8 @@ class MBZ:
         shutil.rmtree(self.temp_dir)
 
     def stripped(self,x):
-        the_string = "".join([i for i in x if 31 < ord(i) < 127])
-        the_string = the_string.strip()
-        the_string = re.sub(r'[^\w\s]','_',the_string,re.UNICODE)
+        the_string = x.strip()
+        the_string = re.sub(r'(?u)[^\w\s]','',the_string)
         return the_string
 
     def extract_file(self,f,dest):
@@ -248,11 +245,11 @@ class mbzFile(MBZ):
             return self.backup.extractfile(f)
 
     def extract(self,f):
-
+        # This seems unecessary and probably is considering both libraries have
+        # the same method, but whatever, this is staying for fear of breaking
+        # something later down the line.
         if self.backup_type == "zip":
-            #backup = zipfile.ZipFile(self.file,'r')
             return backup.extract(f)
 
         elif self.backup_type == "gzip":
-            #backup = tarfile.open(self.file,'r:gz')
             return self.backup.extract(f)
