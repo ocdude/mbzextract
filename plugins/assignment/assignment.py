@@ -79,12 +79,11 @@ class moodle_module:
         if os.path.exists(path) == False:
             os.makedirs(path)
         os.chdir(path)
-
-        if results[5] == 'online':
+        self.db_cursor.execute('SELECT submissionid,userid,timemodified,data,grade,comment,teacher,timemarked FROM assignment_submissions WHERE activityid=? ORDER BY timemodified DESC',(self.current_id,))
+        sub_results = self.db_cursor.fetchall()
+        submissions = []
+        if results[5] == 'online' or results[5] == 'offline':
             # extract online text
-            self.db_cursor.execute('SELECT submissionid,userid,timemodified,data,grade,comment,teacher,timemarked FROM assignment_submissions WHERE activityid=? ORDER BY timemodified DESC',(self.current_id,))
-            sub_results = self.db_cursor.fetchall()
-            submissions = []
             for sub in sub_results:
                 # grab name of student from db
                 self.db_cursor.execute('SELECT firstname,lastname FROM users WHERE userid=?',(sub[1],))
@@ -113,7 +112,56 @@ class moodle_module:
                 intro=results[4],
                 student_data = self.student_data,
                 submissions = submissions)
-            with open('assignment.html','w') as f:
+            os.chdir(path)
+            with open('assignment.html','w+') as f:
                 f.write(output)
-    def extract_file(self,fileid):
-        pass
+                f.close()
+        elif results[5] == 'upload' or results[5] == 'uploadsingle':
+
+            for sub in sub_results:
+                # grab name of student from db
+                self.db_cursor.execute('SELECT firstname,lastname FROM users WHERE userid=?',(sub[1],))
+                user = self.db_cursor.fetchone()
+                username = user[0] + " " + user[1]
+
+                # grab name of teacher from db
+                self.db_cursor.execute('SELECT firstname,lastname FROM users WHERE userid=?',(sub[6],))
+                teacher = self.db_cursor.fetchone()
+                if teacher is not None:
+                    grader = teacher[0] + " " + teacher[1]
+                else:
+                    grader = ""
+
+                # construct submission
+                submissions.append({'id':sub[0],
+                    'user':username,
+                    'timemodified':datetime.fromtimestamp(sub[2]),
+                    'grade':sub[4],
+                    'comment':sub[5],
+                    'teacher':grader,
+                    'timemarked':sub[7]})
+
+                # grab all files submitted by this student
+                self.db_cursor.execute('SELECT contenthash,contextid,filename,userid FROM files WHERE userid=? AND contextid=?',(sub[1],results[2]))
+                files = self.db_cursor.fetchall()
+                submitted_files = []
+                if files is not None:
+                    for f in files:
+                        os.chdir(self.temp_dir)
+                        if not os.path.exists(os.path.join(path,username)):
+                            os.makedirs(os.path.join(path,username))
+                        self.backup.extract_file(f[0],os.path.join(path,username,f[2]))
+                        # construct file list
+                        submitted_files.append({'url':'file://'+os.path.join(path,username,f[2]),'filename':f[2]})
+
+            # write the output assignment.html
+            template = self.env.get_template('upload.html')
+            output = template.render(name=results[3],
+                intro=results[4],
+                student_data = self.student_data,
+                submissions = submissions,
+                files = submitted_files)
+            os.chdir(path)
+            f = open('assignment.html','w+')
+            print(f.write(output))
+            f.close()
