@@ -1,6 +1,6 @@
 import os
 import xml.etree.ElementTree as et
-from html.parser import HTMLParser
+import html
 from datetime import datetime
 from jinja2 import Environment, PackageLoader
 
@@ -26,6 +26,7 @@ class moodle_module:
 
         # commit the changes
         self.db.commit()
+        self.env = Environment(loader=PackageLoader('plugins.assignment','templates'))
 
     def parse(self):
         """Parse the assignment.xml and inforef.xml files to get the details
@@ -38,9 +39,10 @@ class moodle_module:
             assignment_xml.get('moduleid'),
             assignment_xml.get('contextid'),
             assignment_xml.find('./assignment/name').text,
-            assignment_xml.find('./assignment/intro').text,
+            html.unescape(assignment_xml.find('./assignment/intro').text),
             assignment_xml.find('./assignment/assignmenttype').text)
         self.db_cursor.execute('INSERT INTO assignments VALUES(?,?,?,?,?,?)',assignment)
+        self.current_id = assignment_xml.get('id')
 
         # check to see if the backup file has student data in it
         if self.student_data == True:
@@ -71,6 +73,47 @@ class moodle_module:
         # commit all changes to db
         self.db.commit()
     def extract(self):
-        pass
+        self.db_cursor.execute('SELECT * FROM assignments WHERE activityid=?',(self.current_id,))
+        results = self.db_cursor.fetchone()
+        path = os.path.join(self.final_dir,self.backup.stripped(results[3]))
+        if os.path.exists(path) == False:
+            os.makedirs(path)
+        os.chdir(path)
+
+        if results[5] == 'online':
+            # extract online text
+            self.db_cursor.execute('SELECT submissionid,userid,timemodified,data,grade,comment,teacher,timemarked FROM assignment_submissions WHERE activityid=? ORDER BY timemodified DESC',(self.current_id,))
+            sub_results = self.db_cursor.fetchall()
+            submissions = []
+            for sub in sub_results:
+                # grab name of student from db
+                self.db_cursor.execute('SELECT firstname,lastname FROM users WHERE userid=?',(sub[1],))
+                user = self.db_cursor.fetchone()
+                username = user[0] + " " + user[1]
+
+                # grab name of teacher from db
+                self.db_cursor.execute('SELECT firstname,lastname FROM users WHERE userid=?',(sub[6],))
+                teacher = self.db_cursor.fetchone()
+                if teacher is not None:
+                    grader = teacher[0] + " " + teacher[1]
+                else:
+                    grader = ""
+
+                # construct submission
+                submissions.append({'id':sub[0],
+                    'user':username,
+                    'timemodified':datetime.fromtimestamp(sub[2]),
+                    'data':sub[3],
+                    'grade':sub[4],
+                    'comment':sub[5],
+                    'teacher':grader,
+                    'timemarked':sub[7]})
+            template = self.env.get_template('online_text.html')
+            output = template.render(name=results[3],
+                intro=results[4],
+                student_data = self.student_data,
+                submissions = submissions)
+            with open('assignment.html','w') as f:
+                f.write(output)
     def extract_file(self,fileid):
         pass
