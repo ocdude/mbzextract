@@ -22,7 +22,7 @@ class moodle_module:
             # create table for the submissions to the assignments
             query = 'CREATE TABLE IF NOT EXISTS assignment_submissions (submissionid int PRIMARY KEY,activityid int,userid int,timecreated int,timemodified int,data text,grade real,comment text,teacher int,timemarked int)'
             self.db_cursor.execute(query)
-            self.student_data = student_data
+            self.student_data = kwargs['student_data']
 
         # commit the changes
         self.db.commit()
