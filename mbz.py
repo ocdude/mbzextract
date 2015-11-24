@@ -214,7 +214,7 @@ class MBZ:
     def stripped(self,x):
         the_string = "".join([i for i in x if 31 < ord(i) < 127])
         the_string = the_string.strip()
-        the_string = re.sub(r'[^\w\s]','_',the_string)
+        the_string = re.sub(r'[^\w\s]','_',the_string,re.UNICODE)
         return the_string
 
     def extract_file(self,f,dest):
@@ -240,19 +240,19 @@ class mbzFile(MBZ):
     def open(self,f):
 
         if self.backup_type == "zip":
-            backup = zipfile.ZipFile(self.file,'r')
-            return backup.open(f)
+            self.backup = zipfile.ZipFile(self.file,'r')
+            return self.backup.open(f)
 
         elif self.backup_type == "gzip":
-            backup = tarfile.open(self.file,'r')
-            return backup.extractfile(f)
+            self.backup = tarfile.open(self.file,'r:gz')
+            return self.backup.extractfile(f)
 
     def extract(self,f):
 
         if self.backup_type == "zip":
-            backup = zipfile.ZipFile(self.file,'r')
+            #backup = zipfile.ZipFile(self.file,'r')
             return backup.extract(f)
 
         elif self.backup_type == "gzip":
-            backup = tarfile.open(self.file,'r')
-            return backup.extract(f)
+            #backup = tarfile.open(self.file,'r:gz')
+            return self.backup.extract(f)
