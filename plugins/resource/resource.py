@@ -46,5 +46,4 @@ class moodle_module:
             results = self.db_cursor.fetchone()
             if results is not None:
                 os.chdir(self.temp_dir)
-                self.backup.extract(os.path.join('files',results[0][:2],results[0]))
-                shutil.move(os.path.join(self.temp_dir,"files",results[0][:2],results[0]),os.path.join(path,results[1]))
+                self.backup.extract_file(results[0],os.path.join(path,results[1]))
