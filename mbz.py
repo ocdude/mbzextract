@@ -170,8 +170,10 @@ class MBZ:
                     self.db_cursor.execute('SELECT contenthash,filename FROM files WHERE filename != "." and id=?',(f.find('id').text,))
                     results = self.db_cursor.fetchone()
                     if results is not None:
-                        self.backup.extract(os.path.join('files',results[0][:2],results[0]))
-                        shutil.move(os.path.join(self.temp_dir,'files',results[0][:2],results[0]),os.path.join(self.final_dir,"Section - "+self.stripped(section[1])+"_"+str(section[0]),"files",results[1]))
+                        out_path = os.path.join(self.final_dir,"Section - "+self.stripped(section[1])+"_"+str(section[0]),"files",results[1])
+                        self.extract_file(results[0],out_path)
+                        #self.backup.extract(os.path.join('files',results[0][:2],results[0]))
+                        #shutil.move(os.path.join(self.temp_dir,'files',results[0][:2],results[0]),os.path.join(self.final_dir,"Section - "+self.stripped(section[1])+"_"+str(section[0]),"files",results[1]))
                 os.chdir(os.path.join(self.final_dir,"Section - "+self.stripped(section[1])+"_"+str(section[0])))
 
 
@@ -213,11 +215,12 @@ class MBZ:
     def stripped(self,x):
         the_string = "".join([i for i in x if 31 < ord(i) < 127])
         the_string = the_string.strip()
-        the_string = re.sub(r'[^\w]','_',the_string)
+        the_string = re.sub(r'[^\w\s]','_',the_string)
         return the_string
 
-    def extract_file(self,f):
-        pass
+    def extract_file(self,f,dest):
+        self.backup.extract(os.path.join('files',f[:2],f))
+        shutil.move(os.path.join(self.temp_dir,'files',f[:2],f),dest)
 
 class mbzFile(MBZ):
 
