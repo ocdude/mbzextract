@@ -34,9 +34,9 @@ class moodle_module:
     def extract(self):
 
         # create the folder for the urls to be extracted to
-        if os.path.exists(os.path.join(self.final_dir,self.backup.stripped(self.url_xml.find('./url/name').text)+"_url")) == False:
-            os.makedirs(os.path.join(self.final_dir,self.backup.stripped(self.url_xml.find('./url/name').text)+"_url"))
-        os.chdir(os.path.join(self.final_dir,self.backup.stripped(self.url_xml.find('./url/name').text)+"_url"))
+        if os.path.exists(os.path.join(self.final_dir,self.backup.stripped(self.url_xml.find('./url/name').text))) == False:
+            os.makedirs(os.path.join(self.final_dir,self.backup.stripped(self.url_xml.find('./url/name').text)))
+        os.chdir(os.path.join(self.final_dir,self.backup.stripped(self.url_xml.find('./url/name').text)))
 
         # write a .url file
         f = open(self.backup.stripped(self.url_xml.find('./url/name').text)+".url",'w')
