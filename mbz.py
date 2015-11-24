@@ -7,7 +7,6 @@ import shutil
 import re
 import xml.etree.ElementTree as et
 import sqlite3
-import magic
 import importlib
 import plugins
 from datetime import datetime
@@ -230,10 +229,12 @@ class mbzFile(MBZ):
 
     def __init__(self,backup_file):
 
-        if magic.from_file(backup_file,mime=True) == b'application/zip':
+        if zipfile.is_zipfile(backup_file) == True:
             self.backup_type = "zip"
-        elif magic.from_file(backup_file,mime=True) == b'application/x-gzip':
+        elif tarfile.is_tarfile(backup_file) == True:
             self.backup_type = "gzip"
+        else:
+            sys.exit('This file is of an unknown type. Exiting.')
         self.file = backup_file
 
     def open(self,f):
