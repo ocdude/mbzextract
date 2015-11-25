@@ -159,5 +159,5 @@ class moodle_module:
                 files = submitted_files)
             os.chdir(path)
             f = open('assignment.html','w+')
-            print(f.write(output))
+            f.write(output)
             f.close()
