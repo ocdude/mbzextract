@@ -1,3 +1,3 @@
 # moodle2-data-extractor
 
-Usage: `python3 __main__.py BACKUP FILE`
+Usage: `moodle2extract BACKUP FILE`
