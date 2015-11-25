@@ -12,6 +12,7 @@ setup(name='moodle2extract',
 	author_email='ocdude@bluewavedigital.net',
 	packages=packages,
 	install_requires=[
-		'jinja2',
+		'jinja2>=2.7',
 		],
+	scripts=['bin/moodle2extract']
 )

@@ -8,7 +8,6 @@ import re
 import xml.etree.ElementTree as et
 import sqlite3
 import importlib
-import plugins
 
 class MBZ:
     def __init__(self,output):
@@ -185,8 +184,8 @@ class MBZ:
             # import plugin for the activity if we have one
             for activity in activities:
                 try:
-                    plugin_string = "plugins."+activity[0]+"."+activity[0]
-                    plugin = importlib.import_module(plugin_string,'mbz')
+                    plugin_string = "moodle2extract.plugins."+activity[0]+"."+activity[0]
+                    plugin = importlib.import_module(plugin_string,'moodle2extract')
                     print('\033[32;22mProcessing\033[0m', activity[0],activity[1])
                 except ImportError:
                     print('\033[31;22mSkipping\033[0m',activity[0])
