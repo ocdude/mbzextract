@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python3 -m moodle2extract.moodle2extract "$@"
+env python3 -m moodle2extract.moodle2extract "$@"
