@@ -12,7 +12,6 @@ class moodle_module:
         self.directory = kwargs['directory']
         self.final_dir = kwargs['working_dir']
         self.db_cursor = self.db.cursor()
-        self.files = []
 
         # create table for this activity
         query = 'CREATE TABLE IF NOT EXISTS assignments (activityid int PRIMARY KEY,moduleid int,contextid int,name text,intro text,assignmenttype text)'
@@ -64,10 +63,7 @@ class moodle_module:
         print('\tName:',assignment_xml.find('./assignment/name').text)
         print('\tType:',assignment_xml.find('./assignment/assignmenttype').text)
 
-        # create a list of files
-        if inforef_xml.find('fileref') is not None:
-            for f in inforef_xml.findall('./fileref/file'):
-                self.files.append(f.find('id').text)
+        self.files = self.backup.list_files(inforef_xml,self.db_cursor)
         print('\tNumber of files:',len(self.files))
 
         # commit all changes to db

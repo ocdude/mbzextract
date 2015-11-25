@@ -186,9 +186,7 @@ class MBZ:
                 try:
                     plugin_string = "moodle2extract.plugins."+activity[0]+"."+activity[0]
                     plugin = importlib.import_module(plugin_string,'moodle2extract')
-                    print('\033[32;22mProcessing\033[0m', activity[0],activity[1])
                 except ImportError:
-                    print('\033[31;22mSkipping\033[0m',activity[0])
                     continue
 
                 mod = plugin.moodle_module(backup=self.backup,
@@ -220,6 +218,23 @@ class MBZ:
     def extract_file(self,f,dest):
         self.backup.extract(os.path.join('files',f[:2],f))
         shutil.move(os.path.join('files',f[:2],f),dest)
+
+    def list_files(self,inforef_xml,db_cursor):
+        # create list to hold file ids
+        ids = []
+        files = []
+        # find files associated with a particular module
+        # compared against the list of files in the backup
+        if inforef_xml.find('fileref') is not None:
+            for f in inforef_xml.findall('fileref/file/id'):
+                ids.append(f.text)
+            ids = tuple(ids)
+            db_cursor.execute('SELECT id FROM files WHERE id IN ('+','.join('?'*len(ids))+')',ids)
+            results = db_cursor.fetchall()
+            for fileid in results:
+                files.append(fileid[0])
+        return files
+
 
 class mbzFile(MBZ):
 

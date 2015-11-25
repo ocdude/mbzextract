@@ -10,7 +10,6 @@ class moodle_module:
         self.directory = kwargs['directory']
         self.final_dir = kwargs['working_dir']
         self.db_cursor = self.db.cursor()
-        self.files = []
 
         query = "CREATE TABLE IF NOT EXISTS resources (activityid int, moduleid int, contextid int, name text)"
         self.db_cursor.execute(query)
@@ -31,9 +30,7 @@ class moodle_module:
         print('\tName:',resource_xml.find('./resource/name').text)
 
         # create a list of files
-        if inforef_xml.find('fileref') is not None:
-            for f in inforef_xml.findall('./fileref/file'):
-                self.files.append(f.find('id').text)
+        self.files = self.backup.list_files(inforef_xml,self.db_cursor)
         print('\tNumber of files:',len(self.files))
 
     def extract(self):
