@@ -34,27 +34,27 @@ class MBZ:
         self.db_cursor = self.db.cursor()
 
         # create a table for course information
-        query = '''CREATE TABLE course
+        query = '''CREATE TABLE IF NOT EXISTS course
             (fullname text, shortname text, moodle_release text, startdate int, www_root text)'''
         self.db_cursor.execute(query)
 
         # create a table for list of activites and resources
-        query = '''CREATE TABLE activities
+        query = '''CREATE TABLE IF NOT EXISTS activities
             (moduleid int, modulename text, title text, directory text, sectionid int)'''
         self.db_cursor.execute(query)
 
         # create a table for sections
-        query = '''CREATE TABLE sections
+        query = '''CREATE TABLE IF NOT EXISTS sections
             (sectionid int,title text,directory text)'''
         self.db_cursor.execute(query)
 
         # create a table for users
-        query = '''CREATE TABLE users
+        query = '''CREATE TABLE IF NOT EXISTS users
             (userid int, firstname text, lastname text, email text)'''
         self.db_cursor.execute(query)
 
         # create a table for files
-        query = '''CREATE TABLE files
+        query = '''CREATE TABLE IF NOT EXISTS files
             (id int, contenthash text, contextid int, filename text, userid int, mime text)'''
         self.db_cursor.execute(query)
 
