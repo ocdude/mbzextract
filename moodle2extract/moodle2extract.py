@@ -1,6 +1,6 @@
-#! /usr/bin/env python3
-import moodle2extract.mbz as mbz
+#!/usr/bin/env python3
 import argparse
+from moodle2extract import mbz
 
 if __name__ == "__main__":
 

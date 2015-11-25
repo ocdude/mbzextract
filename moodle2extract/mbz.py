@@ -10,7 +10,7 @@ import sqlite3
 import importlib
 
 class MBZ:
-    def __init__(self,output):
+    def __init__(self,output=None):
         if output == None:
             # set the output directory to the current working directory
             # if an explicit output directory was not specified
@@ -35,12 +35,14 @@ class MBZ:
 
         # create a table for course information
         query = '''CREATE TABLE IF NOT EXISTS course
-            (fullname text, shortname text, moodle_release text, startdate int, www_root text)'''
+            (fullname text, shortname text, moodle_release text,
+            startdate int, www_root text)'''
         self.db_cursor.execute(query)
 
         # create a table for list of activites and resources
         query = '''CREATE TABLE IF NOT EXISTS activities
-            (moduleid int, modulename text, title text, directory text, sectionid int)'''
+            (moduleid int, modulename text, title text, directory text,
+            sectionid int)'''
         self.db_cursor.execute(query)
 
         # create a table for sections
@@ -55,7 +57,8 @@ class MBZ:
 
         # create a table for files
         query = '''CREATE TABLE IF NOT EXISTS files
-            (id int, contenthash text, contextid int, filename text, userid int, mime text)'''
+            (id int, contenthash text, contextid int, filename text, userid int,
+            mime text)'''
         self.db_cursor.execute(query)
 
         # commit the transaction
