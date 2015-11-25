@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="theme-color" content="#231161">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    /* HTML5 display-role reset for older browsers */
+
+    article,
+    aside,
+    details,
+    figcaption,
+    figure,
+    footer,
+    header,
+    hgroup,
+    menu,
+    nav,
+    section {
+      display: block;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5em;
+    }
+    .submission {
+      margin: 1em;
+      border: 1px solid #000000;
+      padding: 2em;
+    }
+    .content {
+      margin: 1em;
+      margin-top: 0;
+    }
+    .grade {
+      background: #fafafa;
+      padding: 2em;
+    }
+    h1 {
+      line-height: 1em;
+    }
+  </style>
+  <title>{{name}}</title>
+</head>
+
+<body>
+  <header>
+    <h1>{{name}}</h1>
+    <div class="intro">
+      {{intro}}
+    </div>
+  </header>
+  {% if student_data == True %}
+  <div id="main">
+    <h2>Submissions</h2>
+    {% for submission in submissions %}
+      <div class="submission">
+        <h3>{{submission.user}}</h3>
+        <h4>Submitted: {{submission.timemodified}}</h4>
+        <div class="content">
+          <h4>Files uploaded</h4>
+          <ul>
+          {% for file in files %}
+            <li><a href="{{file.url}}">{{file.filename}}</a></li>
+          {% endfor %}
+        </ul>
+        </div>
+        <div class="grade">
+          <h4>Grade: {{ submission.grade }}</h4>
+          <h5>Graded by</h5>
+          <p>{{submission.teacher}}</p>
+          <h5>Comment</h5>
+          {{submission.comment}}
+        </div>
+      </div>
+      {% endfor %}
+  </div>
+  {% endif %}
+</body>
+
+</html>
