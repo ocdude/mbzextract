@@ -28,8 +28,6 @@ class moodle_module:
 
         self.db_cursor.execute('INSERT INTO urls VALUES(?,?,?,?,?)', url)
         self.db.commit()
-        print('\tName:',self.url_xml.find('./url/name').text)
-        print('\tURL:',self.url_xml.find('./url/externalurl').text)
 
     def extract(self):
 

@@ -27,11 +27,9 @@ class moodle_module:
         self.name = resource_xml.find('./resource/name').text
         self.db_cursor.execute("INSERT INTO resources VALUES(?,?,?,?)",resource)
         self.db.commit()
-        print('\tName:',resource_xml.find('./resource/name').text)
 
         # create a list of files
         self.files = self.backup.list_files(inforef_xml,self.db_cursor)
-        print('\tNumber of files:',len(self.files))
 
     def extract(self):
         path = os.path.join(self.final_dir,self.backup.stripped(self.name))

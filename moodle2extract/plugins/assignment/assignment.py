@@ -58,13 +58,7 @@ class moodle_module:
                     submission.find('timemarked').text)
                 self.db_cursor.execute('INSERT INTO assignment_submissions VALUES(?,?,?,?,?,?,?,?,?,?)', entry)
 
-
-        # print some info about the assignment
-        print('\tName:',assignment_xml.find('./assignment/name').text)
-        print('\tType:',assignment_xml.find('./assignment/assignmenttype').text)
-
         self.files = self.backup.list_files(inforef_xml,self.db_cursor)
-        print('\tNumber of files:',len(self.files))
 
         # commit all changes to db
         self.db.commit()

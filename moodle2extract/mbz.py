@@ -189,7 +189,9 @@ class MBZ:
                 try:
                     plugin_string = "moodle2extract.plugins."+activity[0]+"."+activity[0]
                     plugin = importlib.import_module(plugin_string,'moodle2extract')
+                    print("Extracting "+activity[0])
                 except ImportError:
+                    print("Skipping "+activity[0])
                     continue
 
                 mod = plugin.moodle_module(backup=self.backup,
@@ -237,6 +239,8 @@ class MBZ:
             for fileid in results:
                 files.append(fileid[0])
         return files
+    def get_progress(self,extracted,total):
+        pass
 
 
 class mbzFile(MBZ):

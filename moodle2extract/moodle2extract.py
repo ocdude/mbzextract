@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import sys
 from moodle2extract import mbz
 
 if __name__ == "__main__":
@@ -16,7 +17,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     m = mbz.MBZ(args.o)
+    try:
+        m.parse_backup(args.input)
+        m.extract()
+    except (KeyboardInterrupt,SystemExit):
+        m.clean()
+        sys.exit('Interrputed. Cleaning up and exiting.')
 
-    m.parse_backup(args.input)
-    m.extract()
     m.clean()
