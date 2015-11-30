@@ -18,7 +18,7 @@ class MBZ:
             self.out_dir = os.getcwd()
         else:
             # check to see if the output directory already exists
-            if os.path.exists(self.out_dir):
+            if os.path.exists(output):
                 self.out_dir = output
             else:
             # otherwise create the directory
@@ -100,6 +100,7 @@ class MBZ:
                 self.moodle_backup.find('./information/original_wwwroot').text)
             self.db_cursor.execute('INSERT INTO course VALUES (?,?,?,?,?)',course_info)
             self.course = self.moodle_backup.find('./information/original_course_fullname').text
+            print("Course:",self.course)
         except KeyError:
             sys.exit('The backup file provided does not seem to be a standard Moodle backup file. Exiting.')
 
@@ -190,9 +191,9 @@ class MBZ:
                 try:
                     plugin_string = "moodle2extract.plugins."+activity[0]+"."+activity[0]
                     plugin = importlib.import_module(plugin_string,'moodle2extract')
-                    print("Extracting "+activity[0])
+                    print("\033[32;1mExtracting\033[0m",activity[0])
                 except ImportError:
-                    print("Skipping "+activity[0])
+                    print("\033[31;1mSkipping\033[0m",activity[0])
                     continue
 
                 mod = plugin.moodle_module(backup=self.backup,
