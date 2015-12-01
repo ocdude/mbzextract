@@ -220,7 +220,7 @@ class MBZ:
     def stripped(self,x):
         the_string = x.strip()
         the_string = re.sub(r'(?u)[^\w\s]','',the_string)
-        return the_string.lstrip(' ')
+        return the_string.lstrip(' ').rstrip(' ')
 
     def extract_file(self,f,dest):
         self.backup.extract(os.path.join('files',f[:2],f))
