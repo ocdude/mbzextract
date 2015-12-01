@@ -12,6 +12,8 @@ import importlib
 
 
 class MBZ:
+    """This class has functions to deal with .mbz moodle backup files. It
+    provides several functions to parse and extract files out of a moodle backup."""
 
     def __init__(self, output=None):
         if output == None:
@@ -164,6 +166,9 @@ class MBZ:
         return self.moodle_backup, self.moodle_files
 
     def extract(self):
+        """Loops through the activities and resources in the backup file and attempts
+        to load a plugin for the module. If a plugin does not exist for the module, it skips
+        to the next one. Each plugin is responsible for extracting the content for each module type."""
 
         # create the output directory for extracting the contents
         if os.path.exists(os.path.join(self.out_dir, self.course)) == False:
@@ -243,18 +248,28 @@ class MBZ:
         f.close()
 
     def clean(self):
+        """Cleans the temporary directory of any remaining files and removes the temporary directory."""
         shutil.rmtree(self.temp_dir)
 
     def stripped(self, x):
+        """A helper function that strips symbols and non-safe characters. Plugins can use
+        this function to provide safe file and folder names."""
         the_string = x.strip()
         the_string = re.sub(r'(?u)[^\w\s]', '', the_string)
         return the_string.lstrip(' ').rstrip(' ')
 
     def extract_file(self, f, dest):
+        """A helper function to extract the file from the .mbz data structure. Inside
+        the .mbz file is a folder called `files` that contains hashed versions of files in order to
+        prevent duplicate copies of files being stored. The `files` table in the sqlite database this
+        class creates contains a key that matches the hashed value from the backup with the filename
+        the file originally had."""
         self.backup.extract(os.path.join('files', f[:2], f))
         shutil.move(os.path.join('files', f[:2], f), dest)
 
     def list_files(self, inforef_xml, db_cursor):
+        """A helper function that each plugin can use to find the files that are associated
+        with the specific module that is currently being extracted."""
         # create list to hold file ids
         ids = []
         files = []
