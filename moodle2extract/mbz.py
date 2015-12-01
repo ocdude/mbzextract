@@ -285,10 +285,13 @@ class mbzFile(MBZ):
 
         if zipfile.is_zipfile(backup_file) == True:
             self.backup_type = "zip"
+
         elif tarfile.is_tarfile(backup_file) == True:
             self.backup_type = "gzip"
+
         else:
             sys.exit('This file is of an unknown type. Exiting.')
+
         self.file = backup_file
 
     def open(self, f):
@@ -316,6 +319,7 @@ class mbzFile(MBZ):
         if self.backup_type == "zip":
             info = self.backup.getinfo(os.path.join('files', f[:2], f))
             return info.file_size
+
         elif self.backup_type == "gzip":
             info = self.backup.getmember(os.path.join('files', f[:2], f))
             return info.size
