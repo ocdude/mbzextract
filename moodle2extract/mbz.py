@@ -310,3 +310,12 @@ class mbzFile(MBZ):
 
         elif self.backup_type == "gzip":
             return self.backup.extract(f)
+
+    def get_file_size(self, f):
+        """Returns the file size of the file in bytes."""
+        if self.backup_type == "zip":
+            info = self.backup.getinfo(os.path.join('files', f[:2], f))
+            return info.file_size
+        elif self.backup_type == "gzip":
+            info = self.backup.getmember(os.path.join('files', f[:2], f))
+            return info.size
