@@ -2,8 +2,10 @@ import os
 import shutil
 import xml.etree.ElementTree as et
 
+
 class moodle_module:
-    def __init__(self,**kwargs):
+
+    def __init__(self, **kwargs):
         self.backup = kwargs['backup']
         self.temp_dir = kwargs['temp_dir']
         self.db = kwargs['db']
@@ -16,29 +18,34 @@ class moodle_module:
         self.db.commit()
 
     def parse(self):
-        resource_xml = et.parse(self.backup.open(self.directory+"/resource.xml")).getroot()
-        inforef_xml = et.parse(self.backup.open(self.directory+"/inforef.xml")).getroot()
+        resource_xml = et.parse(self.backup.open(
+            self.directory + "/resource.xml")).getroot()
+        inforef_xml = et.parse(self.backup.open(
+            self.directory + "/inforef.xml")).getroot()
 
         resource = (resource_xml.get('id'),
-            resource_xml.get('moduleid'),
-            resource_xml.get('contextid'),
-            resource_xml.find('./resource/name').text)
+                    resource_xml.get('moduleid'),
+                    resource_xml.get('contextid'),
+                    resource_xml.find('./resource/name').text)
 
         self.name = resource_xml.find('./resource/name').text
-        self.db_cursor.execute("INSERT INTO resources VALUES(?,?,?,?)",resource)
+        self.db_cursor.execute(
+            "INSERT INTO resources VALUES(?,?,?,?)", resource)
         self.db.commit()
 
         # create a list of files
-        self.files = self.backup.list_files(inforef_xml,self.db_cursor)
+        self.files = self.backup.list_files(inforef_xml, self.db_cursor)
 
     def extract(self):
-        path = os.path.join(self.final_dir,self.backup.stripped(self.name))
+        path = os.path.join(self.final_dir, self.backup.stripped(self.name))
         if os.path.exists(path) == False:
             os.makedirs(path)
         os.chdir(path)
         for fileid in self.files:
-            self.db_cursor.execute('SELECT contenthash,filename FROM files WHERE filename != "." AND id=?',(fileid,))
+            self.db_cursor.execute(
+                'SELECT contenthash,filename FROM files WHERE filename != "." AND id=?', (fileid,))
             results = self.db_cursor.fetchone()
             if results is not None:
                 os.chdir(self.temp_dir)
-                self.backup.extract_file(results[0],os.path.join(path,results[1]))
+                self.backup.extract_file(
+                    results[0], os.path.join(path, results[1]))
