@@ -30,7 +30,7 @@ class moodle_module:
         # commit the changes
         self.db.commit()
         self.env = Environment(loader=PackageLoader(
-            'moodle2extract.plugins.assignment', 'templates'))
+            'mbzextract.plugins.assignment', 'templates'))
 
     def parse(self):
         """Parse the assignment.xml and inforef.xml files to get the details

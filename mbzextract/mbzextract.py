@@ -2,7 +2,7 @@
 import argparse
 import sys
 import os
-from moodle2extract import mbz
+from mbzextract import mbz
 
 if __name__ == "__main__":
 

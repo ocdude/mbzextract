@@ -219,10 +219,10 @@ class MBZ:
             # import plugin for the activity if we have one
             for activity in activities:
                 try:
-                    plugin_string = "moodle2extract.plugins." + \
+                    plugin_string = "mbzextract.plugins." + \
                         activity[0] + "." + activity[0]
                     plugin = importlib.import_module(
-                        plugin_string, 'moodle2extract')
+                        plugin_string, 'mbzextract')
                     print("\033[32;1mExtracting\033[0m", activity[0])
                 except ImportError:
                     print("\033[31;1mSkipping\033[0m", activity[0])
