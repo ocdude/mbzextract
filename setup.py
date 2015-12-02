@@ -14,6 +14,6 @@ setup(name='mbzextract',
       install_requires=[
           'jinja2>=2.7',
       ],
-      licence='MIT',
+      license='MIT',
       scripts=['bin/mbzextract']
       )
