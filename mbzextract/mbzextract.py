@@ -35,7 +35,7 @@ if __name__ == "__main__":
                     m.extract()
                     m.clean()
                     break
-                elif prompt == 'n' or prompt == 'no':
+                elif prompt == 'n' or prompt == 'no' or prompt == '':
                     sys.exit('Not extracting files. Exiting.')
                 else:
                     print("Please answer yes or no.")
