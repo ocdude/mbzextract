@@ -163,7 +163,7 @@ class moodle_module:
                                 f[0], os.path.join(path, username, f[2]))
                             # construct file list
                             submitted_files.append(
-                                {'url': 'file://' + os.path.join(path, username, f[2]), 'filename': f[2]})
+                                {'url':os.path.join(username, f[2]), 'filename': f[2]})
 
                 # write the output assignment.html
                 template = self.env.get_template('upload.html')
