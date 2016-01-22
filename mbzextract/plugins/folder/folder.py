@@ -28,7 +28,7 @@ class moodle_module:
                     folder_xml.get('contextid'),
                     folder_xml.find('./folder/name').text)
 
-        self.name = resource_xml.find('./folder/name').text
+        self.name = folder_xml.find('./folder/name').text
         self.db_cursor.execute(
             "INSERT INTO folders VALUES(?,?,?,?)", folder)
         self.db.commit()
