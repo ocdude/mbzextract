@@ -239,13 +239,13 @@ class MBZ:
             os.chdir(self.final_dir)
 
         # create a copy of the sqlite database in the extracted folder
-        shutil.copy(self.db_file, os.path.join(
-            self.final_dir, "backup_database.db"))
+        #shutil.copy(self.db_file, os.path.join(
+        #    self.final_dir, "backup_database.db"))
 
         # create a readme file in the folder
-        f = open(os.path.join(self.final_dir, "readme.txt"), 'w')
-        f.write("The folders are organized by the sections as they existed in your moodle course. Inside each section folder is a folder for each activity or resource that existed. In each activity or resource folder is a folder called 'files' that contains the files from that activity or resource.")
-        f.close()
+        #f = open(os.path.join(self.final_dir, "readme.txt"), 'w')
+        #f.write("The folders are organized by the sections as they existed in your moodle course. Inside each section folder is a folder for each activity or resource that existed. In each activity or resource folder is a folder called 'files' that contains the files from that activity or resource.")
+        #f.close()
 
     def clean(self):
         """Cleans the temporary directory of any remaining files and removes the temporary directory."""
