@@ -11,6 +11,7 @@ setup(name='mbzextract',
       author='Cristian Alvarado',
       author_email='ocdude@bluewavedigital.net',
       packages=packages,
+      include_package_data=True,
       install_requires=[
           'jinja2>=2.7',
       ],
