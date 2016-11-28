@@ -171,9 +171,9 @@ class MBZ:
         to the next one. Each plugin is responsible for extracting the content for each module type."""
 
         # create the output directory for extracting the contents
-        if os.path.exists(os.path.join(self.out_dir, self.course)) == False:
-            os.mkdir(os.path.join(self.out_dir, self.course))
-        os.chdir(os.path.join(self.out_dir, self.course))
+        if os.path.exists(os.path.join(self.out_dir, self.stripped(self.course))) == False:
+            os.mkdir(os.path.join(self.out_dir, self.stripped(self.course)))
+        os.chdir(os.path.join(self.out_dir, self.stripped(self.course)))
         self.final_dir = os.getcwd()
 
         # create directory structure by section
