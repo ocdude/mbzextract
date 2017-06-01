@@ -26,7 +26,7 @@ if __name__ == "__main__":
     else:
         cwd = args.o
     try:
-        m.parse_backup(args.input)
+        m.parse_backup(os.path.abspath(args.input))
         if args.e is not True:
             while True:
                 prompt = input(
