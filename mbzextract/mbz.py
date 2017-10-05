@@ -1,4 +1,4 @@
-__version__ = "0.0.1a1"
+__version__ = "0.0.2a"
 import os
 import zipfile
 import tarfile
@@ -264,8 +264,12 @@ class MBZ:
         prevent duplicate copies of files being stored. The `files` table in the sqlite database this
         class creates contains a key that matches the hashed value from the backup with the filename
         the file originally had."""
-        self.backup.extract(os.path.join('files', f[:2], f))
-        shutil.move(os.path.join('files', f[:2], f), dest)
+        try:
+            self.backup.extract(os.path.join('files', f[:2], f))
+            shutil.move(os.path.join('files', f[:2], f), dest)
+        except KeyError:
+            print("File not found:",f)
+            return "File not found"
 
     def list_files(self, inforef_xml, db_cursor):
         """A helper function that each plugin can use to find the files that are associated
