@@ -239,8 +239,8 @@ class MBZ:
             os.chdir(self.final_dir)
 
         # create a copy of the sqlite database in the extracted folder
-        #shutil.copy(self.db_file, os.path.join(
-        #    self.final_dir, "backup_database.db"))
+        shutil.copy(self.db_file, os.path.join(
+            self.final_dir, "backup_database.db"))
 
         # create a readme file in the folder
         #f = open(os.path.join(self.final_dir, "readme.txt"), 'w')
