@@ -1,2 +1,2 @@
-#!/usr/bin/env bash
+#!/bin/sh
 env python3 -m mbzextract.mbzextract "$@"
