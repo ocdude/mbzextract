@@ -1,0 +1,5 @@
+* Check if file has submissions
+	* Check what submission plugins are enabled
+		* Create folder for each student
+		* Extract every file in submission plugin
+	* Repeat per submission plugin
