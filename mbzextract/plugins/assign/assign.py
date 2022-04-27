@@ -44,27 +44,35 @@ class moodle_module:
             self.directory + "/inforef.xml")).getroot()
 
         # add assignments to the database
+        if assignment_xml.find('./assign/intro').text is not None:
+            assignment_description = html.unescape(assignment_xml.find(
+                          './assign/intro').text)
+        else:
+            assignment_description = ""
         assignment = (assignment_xml.get('id'),
                       assignment_xml.get('moduleid'),
                       assignment_xml.get('contextid'),
                       assignment_xml.find('./assign/name').text,
-                      html.unescape(assignment_xml.find(
-                          './assign/intro').text))
+                      assignment_description)
         self.db_cursor.execute(
             'INSERT INTO assignments VALUES(?,?,?,?,?)', assignment)
         self.current_id = assignment_xml.get('id')
 
         #this is temporary
-        #self.student_data = False
+        self.student_data = False
         # check to see if the backup file has student data in it
         if self.student_data == True:
             for submission in assignment_xml.findall('./assign/submissions/submission'):
+                if submission.find('data1') is not None:
+                    data1 = submission.find('data1').text
+                else:
+                    data1 = ""
                 entry = (submission.get('id'),
                          assignment_xml.get('id'),
                          submission.find('userid').text,
                          submission.find('timecreated').text,
                          submission.find('timemodified').text,
-                         submission.find('data1').text,
+                         data1,
                          submission.find('grade').text,
                          submission.find('submissioncomment').text,
                          submission.find('teacher').text,
